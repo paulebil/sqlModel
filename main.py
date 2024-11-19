@@ -128,6 +128,13 @@ def select_heroes_by_id_with_where():
         hero = results.first()
         print("Hero:", hero)
 
+def select_heroes_limit():
+    with Session(engine) as session:
+        statement = select(Hero).offset(6).limit(3)
+        results = session.exec(statement)
+        heroes = results.all()
+        for hero in heroes:
+            print(hero)
 
 def select_heroes_by_id_with_get():
     with Session(engine) as session:
@@ -139,17 +146,96 @@ def select_heroes_with_get_with_no_data():
         hero = session.get(Hero, 9001)
         print("Hero:", hero)
 
+# Combine Limit and Offset with Where
+def select_heroes_limit_offset_and_where():
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.age > 32).offset(1).limit(2)
+        results = session.exec(statement)
+        heroes = results.all()
+        for hero in heroes:
+            print(hero)
+
+# Update Data
+def update_heroes():
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.name == "Spider-Boy")
+        results = session.exec(statement)
+        hero = results.one()
+        print("Hero:", hero)
+
+        hero.age = 17
+        session.add(hero)
+        session.commit()
+        session.refresh(hero)
+        print("Updated hero:",hero)
+
+
+def update_heroes_multiple():
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.name == "Spider-Boy")
+        results = session.exec(statement)
+        hero_1 = results.one()
+        print("Hero:", hero_1)
+
+        statement = select(Hero).where(Hero.name == "Captain North America")
+        results = session.exec(statement)
+        hero_2 = results.one()
+        print("Hero 2:", hero_2)
+
+        hero_1.age = 16
+        hero_1.name = "Spider-Youngster"
+        session.add(hero_1)
+
+        hero_2.age = 110
+        hero_2.name = "Captain North America Except Canada"
+        session.add(hero_2)
+
+        session.commit()
+        session.refresh(hero_2)
+        session.refresh(hero_1)
+
+        print("Updated hero 1:", hero_1)
+        print("Updated hero 2:", hero_2)
+
+# Delete Data
+def delete_heroes():
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.name == "Spider-Youngster")
+        results = session.exec(statement)
+        hero = results.one()
+        print("Hero:", hero)
+
+        session.delete(hero)
+        session.commit()
+
+        print("Deleted hero:", hero)
+
+        # Query the Database for the same row
+        statement = select(Hero).where(Hero.name == "Spider-Youngster")
+        results = session.exec(statement)
+        hero = results.first()
+
+        if hero is None:
+            print("There's no hero named Spider-Youngster")
 
 def main():
     # create_db_and_tables()
     # create_heroes()
-    select_heroes_one_row()
+    # select_heroes_one_row()
+    # print("\n")
+    # select_heroes_by_id_with_where()
+    # print("\n")
+    # select_heroes_by_id_with_get()
+    # print("\n")
+    # select_heroes_with_get_with_no_data()
+    # print("\n")
+    #select_heroes_limit()
+    # print("\n")
+    # select_heroes_limit_offset_and_where()
+    # print("\n")
+    # update_heroes_multiple()
     print("\n")
-    select_heroes_by_id_with_where()
-    print("\n")
-    select_heroes_by_id_with_get()
-    print("\n")
-    select_heroes_with_get_with_no_data()
+    delete_heroes()
 
 if __name__ == '__main__':
     main()
